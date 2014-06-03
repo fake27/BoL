@@ -8,7 +8,7 @@ if myHero.charName ~= "Nidalee" then return end
 local SKONAME = "SKONida"
 local SKOFILEPATH = SCRIPT_PATH.."SKONida.lua"
 local SKOHOST = "raw.github.com"
-local SKOHPATH = "/SKOBoL/bol/SKONida.lua"
+local SKOHPATH = "/SKOBoL/BoL/master/"
 local SKOUrl = "https://"..SKOHOST..SKOHPATH
 
 local SourceLibUrl = "https://raw.githubusercontent.com/TheRealSource/public/master/common/SourceLib.lua"
