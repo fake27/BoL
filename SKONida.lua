@@ -132,7 +132,7 @@ function OnTick()
         autoLevelSetSequence(levelSequence.QW)
     end
 
-    if ISCOUGAR and myHero.health <= (myHero.maxHealth * (SKOMenu.extra.autoHeal/100)) and EREADY and nor Recall then
+    if ISCOUGAR and myHero.health <= (myHero.maxHealth * (SKOMenu.extra.autoHeal/100)) and EREADY and not Recall then
         CastSpell(_R)
     end
     if SKOMenu.extra.useautoHeal and not Recall and not ISCOUGAR then
