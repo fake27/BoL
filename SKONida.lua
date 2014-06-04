@@ -187,10 +187,10 @@ function activeCombo()
         if ISHUMAN and GetDistance(Target) < Spells.W.range then
             HumanCombo()
         end
-        if ISHUMAN and SKOMenu.Combo.useR and GetDistance(Target) <= 400 then
+        if ISHUMAN and SKOMenu.Combo.useR and GetDistance(Target) <= 625 then
             CougarCombo()
         end
-        if ISCOUGAR and GetDistance(Target) < 400 then
+        if ISCOUGAR and GetDistance(Target) < 625 then
             CougarCombo()
         end
         if ISCOUGAR and SKOMenu.Combo.useR and GetDistance(Target) > Spells.W.range
