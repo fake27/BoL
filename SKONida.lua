@@ -1,4 +1,4 @@
-local version = "1.0"
+local version = "1.3"
 _G.SKONIDA_UPDATE = true
 if myHero.charName ~= "Nidalee" then return end
 
@@ -393,4 +393,7 @@ local sourcePos = Vector(source.x, source.z)
 sourceVector = (sourceVector-sourcePos):normalized()
 sourceVector = sourcePos + (sourceVector*(GetDistance(ourtarget, source)))
 return GetDistanceSqr(ourtarget, {x = sourceVector.x, z = sourceVector.y}) <= (lineLength and lineLength^2 or 90000)
+end
+local function getHitBoxRadius(target)
+        return GetDistance(target, target.minBBox)
 end
