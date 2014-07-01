@@ -1,4 +1,4 @@
-local version = "1.3"
+local version = "2.0"
 _G.SKONIDA_UPDATE = true
 if myHero.charName ~= "Nidalee" then return end
 
@@ -41,7 +41,8 @@ Spells = {
         E = {range = 600},
         QC = {range = myHero.range + GetDistance(myHero.minBBox)},
         WC = {range = 375},
-        EC = {range = 350}
+        WCWP = {range = 750},
+        EC = {range = 300}
 }
 
 levelSequence = {
@@ -56,6 +57,7 @@ local DFGSlot, HXGSlot, BWCSlot, BRKSlot, HYDSlot = nil, nil, nil, nil, nil
 local VP = nil
 local ts
 local Recall = false
+local NidaleePassive = false
 ts = TargetSelector(TARGET_LOW_HP, Spells.Q.range, DAMAGE_MAGIC, true)
 ts.name = "Nidalee"
 local Target = nil
@@ -213,6 +215,9 @@ function CougarCombo()
             if SKOMenu.Combo.useWC and GetDistance(Target) <= 400 then UseWCougar(Target) end
             if SKOMenu.Combo.useEC and GetDistance(Target) <= 300 then UseECougar(Target) end
             if SKOMenu.Combo.useQC and GetDistance(Target) <= Spells.QC.range then UseQCougar(Target) end
+            if NidaleePassive and SKOMenu.Combo.useWC and GetDistance(Target) <= Spells.WCWP.range then
+              UseWCWPCougar(Target)
+              end
     end
 end
 function UseQHuman()
@@ -259,12 +264,24 @@ function UseWCougar(enemy)
             then return false
         end
         if not NSOW:CanAttack() then
-            if ValidTarget(enemy) and isFacing(myHero, enemy, 100)
-                then CastSpell(_W)
+            if ValidTarget(enemy)
+                then CastSpell(_W, enemy)
                 return true
             end
         end
         return false
+end
+
+function UseWCWPCougar(enemy)
+  if not enemy then enemy = Target end
+  if (not WREADY or (GetDistance(enemy) > Spells.WCWP.range) or ISHUMAN) then
+    return false
+  end
+  if not NSOW:CanAttack() then
+    if ValidTarget(enemy) then
+        CastSpell(_W, enemy.x, enemy.z)
+      end
+    end
 end
 
 function UseECougar(enemy)
@@ -273,8 +290,8 @@ function UseECougar(enemy)
             then return false
         end
         if not NSOW:CanAttack() then
-            if ValidTarget(enemy) and isFacing(myHero, enemy, 200) then 
-                CastSpell(_E)
+            if ValidTarget(enemy) then 
+                CastSpell(_E, enemy)
                 return true
             end
         end
@@ -294,8 +311,8 @@ function Farm()
         if ValidTarget(minion) then
                 if ISHUMAN == true then CastSpell(_R) end
                     if SKOMenu.farm.useQ and GetDistance(minion) <= Spells.QC.range and QREADY and ISCOUGAR then CastSpell(_Q, minion.x, minion.z) end
-                    if SKOMenu.farm.useW and GetDistance(minion) <= Spells.WC.range and WREADY and ISCOUGAR and isFacing(myHero, minion, 100) then  CastSpell(_W, minion.x, minion.y) end
-                    if SKOMenu.farm.useE and GetDistance(minion) <= Spells.EC.range and EREADY and ISCOUGAR and isFacing(myHero, minion, 200) then  CastSpell(_E, minion.x, minion.z) end
+                    if SKOMenu.farm.useW and GetDistance(minion) <= Spells.WC.range and WREADY and ISCOUGAR then  CastSpell(_W, minion) end
+                    if SKOMenu.farm.useE and GetDistance(minion) <= Spells.EC.range and EREADY and ISCOUGAR then  CastSpell(_E, minion.x, minion.z) end
         end
     end
 end
@@ -306,8 +323,8 @@ function JungleFarm()
         if ValidTarget(minion) then
                 if ISHUMAN == true then CastSpell(_R) end
                     if SKOMenu.jungle.useQ and GetDistance(minion) <= Spells.QC.range and QREADY and ISCOUGAR then CastSpell(_Q, minion.x, minion.z) end
-                    if SKOMenu.jungle.useW and GetDistance(minion) <= Spells.WC.range and WREADY and ISCOUGAR and isFacing(myHero, minion, 100) then  CastSpell(_W, minion.x, minion.z) end
-                    if SKOMenu.jungle.useE and GetDistance(minion) <= Spells.EC.range and EREADY and ISCOUGAR and isFacing(myHero, minion, 200) then  CastSpell(_E, minion.x, minion.z) end
+                    if SKOMenu.jungle.useW and GetDistance(minion) <= Spells.WC.range and WREADY and ISCOUGAR then  CastSpell(_W, minion) end
+                    if SKOMenu.jungle.useE and GetDistance(minion) <= Spells.EC.range and EREADY and ISCOUGAR then  CastSpell(_E, minion.x, minion.z) end
         end
     end
 end
@@ -350,6 +367,16 @@ function GetOthersTarget()
     if _G.AutoCarry and _G.AutoCarry.Crosshair and _G.AutoCarry.Attack_Crosshair and _G.AutoCarry.Attack_Crosshair.target and _G.AutoCarry.Attack_Crosshair.target.type == myHero.type then return _G.AutoCarry.Attack_Crosshair.target end
     return ts.target
 end
+function OnGainBuff(unit, buff)
+    if buff.name == "nidaleepassivehunting" then
+      NidaleePassive = true
+      end
+end
+function OnLoseBuff(unit, buff)
+  if buff.name == "nidaleepassivehunting" then
+    NidaleePassive = false
+    end
+ end
 function OnCreateObj(obj)
     if obj ~= nil then
         if obj.name:find("TeleportHome.troy") then
@@ -385,14 +412,6 @@ function OnFinishRecall(hero)
     if hero.networkID == player.networkID
         then Recall = false
     end
-end
---By Feez
-function isFacing(source, ourtarget, lineLength)
-local sourceVector = Vector(source.visionPos.x, source.visionPos.z)
-local sourcePos = Vector(source.x, source.z)
-sourceVector = (sourceVector-sourcePos):normalized()
-sourceVector = sourcePos + (sourceVector*(GetDistance(ourtarget, source)))
-return GetDistanceSqr(ourtarget, {x = sourceVector.x, z = sourceVector.y}) <= (lineLength and lineLength^2 or 90000)
 end
 local function getHitBoxRadius(target)
         return GetDistance(target, target.minBBox)
